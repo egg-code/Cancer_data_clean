@@ -12,9 +12,15 @@ Base.metadata.create_all(engine) # Create tables from base.py
 # Insert data into sqlite tables if they exist
 
 with Session(engine) as session:
+    #Fetch all existing IDs in one go
+    existing_patient_ids = {row[0] for row in session.query(Patient.Patient_ID).all()}
+    existing_cancer_ids = {row[0] for row in session.query(Cancer.Patient_ID).all()}
+    existing_confidential_ids = {row[0] for row in session.query(Confidential.Patient_ID).all()}
+
+    #Insert data into Patient table
+    patients = []
     for _, row in patient_df.iterrows():
-        existing_patient = session.query(Patient).filter(Patient.Patient_ID == row['Patient_ID']).first()
-        if not existing_patient:
+        if row['Patient_ID'] not in existing_patient_ids:
             patient = Patient(
                 Patient_ID=row['Patient_ID'],
                 Country=row['Country'],
@@ -24,11 +30,13 @@ with Session(engine) as session:
                 Smoking_History=row['Smoking_History'],
                 Alcohol_Consumption=row['Alcohol_Consumption']
             )
-            session.add(patient)
-    
+            patients.append(patient)
+    session.add_all(patients)
+
+    #Insert data into Cancer table
+    cancers = []
     for _, row in cancer_df.iterrows():
-        existing_cancer = session.query(Cancer).filter(Cancer.Patient_ID == row['Patient_ID']).first()
-        if not existing_cancer:
+        if row['Patient_ID'] not in existing_cancer_ids:
             cancer = Cancer(
                 Patient_ID=row['Patient_ID'],
                 Cancer_Stage=row['Cancer_Stage'],
@@ -36,11 +44,13 @@ with Session(engine) as session:
                 Early_Detection=row['Early_Detection'],
                 Treatment_Type=row['Treatment_Type']
             )
-            session.add(cancer)
+            cancers.append(cancer)
+    session.add_all(cancers)
 
+    #Insert data into Confidential table
+    confidentials = []
     for _, row in confidential_df.iterrows():
-        existing_confidential = session.query(Confidential).filter(Confidential.Patient_ID == row['Patient_ID']).first()
-        if not existing_confidential:
+        if row['Patient_ID'] not in existing_confidential_ids:
             confidential = Confidential(
                 Patient_ID=row['Patient_ID'],
                 Genetic_Mutation=row['Genetic_Mutation'],
@@ -50,7 +60,8 @@ with Session(engine) as session:
                 Healthcare_Access=row['Healthcare_Access'],
                 Survival_Prediction=row['Survival_Prediction']
             )
-            session.add(confidential)
+            confidentials.append(confidential)
+    session.add_all(confidentials)
     session.commit()
 
 #Read data from tables using ORM limit to 10 rows

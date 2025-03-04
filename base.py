@@ -1,6 +1,7 @@
 from sqlalchemy import Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
+#Create a base class for the tables for cancer.db
 class Base(DeclarativeBase):
     pass
 

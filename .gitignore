@@ -1,0 +1,6 @@
+*.db
+cancer.csv
+patient.csv
+confidential.csv
+__pycache__/
+*.pyc
